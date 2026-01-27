@@ -20,12 +20,21 @@ module.exports = function (plop) {
 
     actions: (data) => {
       const sanitizedName = data.name.replace(/\s+/g, "-").toLowerCase();
-      const basePath = `src/modules/${sanitizedName}`;
+      const basePath = path.join(
+        plop.getDestBasePath(),
+        "src/modules",
+        sanitizedName,
+      );
 
       const components = [
         {
           type: "add",
-          path: `${basePath}/components/{{name}}-form/{{name}}-form.tsx`,
+          path: path.join(
+            basePath,
+            "components",
+            `${sanitizedName}-form`,
+            `${sanitizedName}-form.tsx`,
+          ),
           templateFile: path.join(
             __dirname,
             "templates/components/module-form/component.hbs",
@@ -33,7 +42,12 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/components/{{name}}-form/index.ts`,
+          path: path.join(
+            basePath,
+            "components",
+            `${sanitizedName}-form`,
+            "index.ts",
+          ),
           templateFile: path.join(
             __dirname,
             "templates/components/module-form/index.hbs",
@@ -41,7 +55,12 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/components/{{name}}-form-dialog/{{name}}-form-dialog.tsx`,
+          path: path.join(
+            basePath,
+            "components",
+            `${sanitizedName}-form-dialog`,
+            `${sanitizedName}-form-dialog.tsx`,
+          ),
           templateFile: path.join(
             __dirname,
             "templates/components/module-form-dialog/component.hbs",
@@ -49,7 +68,12 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/components/{{name}}-form-dialog/index.ts`,
+          path: path.join(
+            basePath,
+            "components",
+            `${sanitizedName}-form-dialog`,
+            "index.ts",
+          ),
           templateFile: path.join(
             __dirname,
             "templates/components/module-form-dialog/index.hbs",
@@ -57,7 +81,12 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/components/{{name}}-list-toolbar/{{name}}-list-toolbar.tsx`,
+          path: path.join(
+            basePath,
+            "components",
+            `${sanitizedName}-list-toolbar`,
+            `${sanitizedName}-list-toolbar.tsx`,
+          ),
           templateFile: path.join(
             __dirname,
             "templates/components/module-list-toolbar/component.hbs",
@@ -65,7 +94,12 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/components/{{name}}-list-toolbar/index.ts`,
+          path: path.join(
+            basePath,
+            "components",
+            `${sanitizedName}-list-toolbar`,
+            "index.ts",
+          ),
           templateFile: path.join(
             __dirname,
             "templates/components/module-list-toolbar/index.hbs",
@@ -73,7 +107,12 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/components/{{name}}-list-row-actions/{{name}}-list-row-actions.tsx`,
+          path: path.join(
+            basePath,
+            "components",
+            `${sanitizedName}-list-row-actions`,
+            `${sanitizedName}-list-row-actions.tsx`,
+          ),
           templateFile: path.join(
             __dirname,
             "templates/components/module-list-row-actions/component.hbs",
@@ -81,7 +120,12 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/components/{{name}}-list-row-actions/index.ts`,
+          path: path.join(
+            basePath,
+            "components",
+            `${sanitizedName}-list-row-actions`,
+            "index.ts",
+          ),
           templateFile: path.join(
             __dirname,
             "templates/components/module-list-row-actions/index.hbs",
@@ -92,7 +136,11 @@ module.exports = function (plop) {
       const constants = [
         {
           type: "add",
-          path: `${basePath}/constants/{{name}}-list.columns.tsx`,
+          path: path.join(
+            basePath,
+            "constants",
+            `${sanitizedName}-list.columns.tsx`,
+          ),
           templateFile: path.join(
             __dirname,
             "templates/constants/module-list.columns.hbs",
@@ -100,7 +148,7 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/constants/{{name}}.paths.ts`,
+          path: path.join(basePath, "constants", `${sanitizedName}.paths.ts`),
           templateFile: path.join(
             __dirname,
             "templates/constants/module.paths.hbs",
@@ -108,7 +156,11 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/constants/{{name}}.permissions.ts`,
+          path: path.join(
+            basePath,
+            "constants",
+            `${sanitizedName}.permissions.ts`,
+          ),
           templateFile: path.join(
             __dirname,
             "templates/constants/module.permissions.hbs",
@@ -116,7 +168,7 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/constants/{{name}}.queries.ts`,
+          path: path.join(basePath, "constants", `${sanitizedName}.queries.ts`),
           templateFile: path.join(
             __dirname,
             "templates/constants/module.queries.hbs",
@@ -127,7 +179,7 @@ module.exports = function (plop) {
       const pages = [
         {
           type: "add",
-          path: `${basePath}/pages/{{name}}-list.page.tsx`,
+          path: path.join(basePath, "pages", `${sanitizedName}-list.page.tsx`),
           templateFile: path.join(
             __dirname,
             "templates/pages/module-list.page.hbs",
@@ -135,7 +187,7 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: `${basePath}/pages/index.ts`,
+          path: path.join(basePath, "pages", "index.ts"),
           templateFile: path.join(__dirname, "templates/pages/index.hbs"),
         },
       ];
@@ -143,7 +195,11 @@ module.exports = function (plop) {
       if (data.withDetailsPage) {
         pages.push({
           type: "add",
-          path: `${basePath}/pages/{{name}}-details.page.tsx`,
+          path: path.join(
+            basePath,
+            "pages",
+            `${sanitizedName}-details.page.tsx`,
+          ),
           templateFile: path.join(
             __dirname,
             "templates/pages/module-details.page.hbs",
