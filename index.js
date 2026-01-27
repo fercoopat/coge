@@ -12,12 +12,12 @@ const argv = minimist(args);
 
 const plopfilePath = path.join(__dirname, "plopfile.js");
 
-// Preparar Plop con el proyecto consumidor como destino
+// Preparar Plop con el proyecto consumidor como cwd
 Plop.prepare(
   {
-    cwd: __dirname, // carpeta del generador
-    configPath: plopfilePath, // tu plopfile.js
-    destBasePath: process.cwd(), // carpeta del proyecto que ejecuta pnpm gen
+    cwd: process.cwd(), // <-- ahora es el proyecto que ejecuta pnpm gen
+    configPath: plopfilePath, // plopfile.js dentro del generador
+    destBasePath: process.cwd(), // <-- ruta donde se generará el código
   },
   (env) => Plop.execute(env, run),
 );
