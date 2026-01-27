@@ -1,4 +1,6 @@
+// generators/module/config.js
 const path = require("path");
+const fs = require("fs");
 
 module.exports = function (plop) {
   plop.setGenerator("module", {
@@ -7,8 +9,15 @@ module.exports = function (plop) {
       {
         type: "input",
         name: "name",
-        message: "Module name (ex: users, orders)",
-        validate: (value) => (value ? true : "Module name is required"),
+        message: "Module name (ex: users, orders):",
+        validate: (value) => {
+          if (!value) return "Module name is required";
+          if (!/^[a-zA-Z][a-zA-Z0-9\s-]*$/.test(value)) {
+            return "Module name must start with a letter and contain only letters, numbers, spaces, and hyphens";
+          }
+          return true;
+        },
+        filter: (value) => value.trim(),
       },
       {
         type: "confirm",
@@ -19,164 +28,91 @@ module.exports = function (plop) {
     ],
 
     actions: (data) => {
-      const sanitizedName = data.name.replace(/\s+/g, "-").toLowerCase();
-      const basePath = path.join(
-        plop.getDestBasePath(),
-        "src/modules",
-        sanitizedName,
-      );
+      const sanitizedName = data.name
+        .replace(/\s+/g, "-")
+        .replace(/[^a-zA-Z0-9-]/g, "")
+        .toLowerCase();
 
-      const components = [
+      // CRITICAL FIX: Use process.cwd() to target the consumer project
+      const basePath = path.join(process.cwd(), "src/modules", sanitizedName);
+
+      // Verify we're not writing to node_modules
+      if (basePath.includes("node_modules")) {
+        throw new Error(
+          "Security check failed: Cannot write to node_modules directory",
+        );
+      }
+
+      // Ensure the base directory exists
+      if (!fs.existsSync(basePath)) {
+        fs.mkdirSync(basePath, { recursive: true });
+      }
+
+      const actions = [];
+
+      // Helper function to add component actions
+      const addComponent = (componentName, templateName) => {
+        const componentDir = path.join(
+          "components",
+          `${sanitizedName}-${componentName}`,
+        );
+        actions.push(
+          {
+            type: "add",
+            path: path.join(
+              basePath,
+              componentDir,
+              `${sanitizedName}-${componentName}.tsx`,
+            ),
+            templateFile: path.join(
+              __dirname,
+              `templates/components/module-${templateName}/component.hbs`,
+            ),
+          },
+          {
+            type: "add",
+            path: path.join(basePath, componentDir, "index.ts"),
+            templateFile: path.join(
+              __dirname,
+              `templates/components/module-${templateName}/index.hbs`,
+            ),
+          },
+        );
+      };
+
+      // Add all components
+      addComponent("form", "form");
+      addComponent("form-dialog", "form-dialog");
+      addComponent("list-toolbar", "list-toolbar");
+      addComponent("list-row-actions", "list-row-actions");
+
+      // Constants files
+      const constantsFiles = [
         {
-          type: "add",
-          path: path.join(
-            basePath,
-            "components",
-            `${sanitizedName}-form`,
-            `${sanitizedName}-form.tsx`,
-          ),
-          templateFile: path.join(
-            __dirname,
-            "templates/components/module-form/component.hbs",
-          ),
+          filename: `${sanitizedName}-list.columns.tsx`,
+          template: "module-list.columns",
         },
+        { filename: `${sanitizedName}.paths.ts`, template: "module.paths" },
         {
-          type: "add",
-          path: path.join(
-            basePath,
-            "components",
-            `${sanitizedName}-form`,
-            "index.ts",
-          ),
-          templateFile: path.join(
-            __dirname,
-            "templates/components/module-form/index.hbs",
-          ),
+          filename: `${sanitizedName}.permissions.ts`,
+          template: "module.permissions",
         },
-        {
-          type: "add",
-          path: path.join(
-            basePath,
-            "components",
-            `${sanitizedName}-form-dialog`,
-            `${sanitizedName}-form-dialog.tsx`,
-          ),
-          templateFile: path.join(
-            __dirname,
-            "templates/components/module-form-dialog/component.hbs",
-          ),
-        },
-        {
-          type: "add",
-          path: path.join(
-            basePath,
-            "components",
-            `${sanitizedName}-form-dialog`,
-            "index.ts",
-          ),
-          templateFile: path.join(
-            __dirname,
-            "templates/components/module-form-dialog/index.hbs",
-          ),
-        },
-        {
-          type: "add",
-          path: path.join(
-            basePath,
-            "components",
-            `${sanitizedName}-list-toolbar`,
-            `${sanitizedName}-list-toolbar.tsx`,
-          ),
-          templateFile: path.join(
-            __dirname,
-            "templates/components/module-list-toolbar/component.hbs",
-          ),
-        },
-        {
-          type: "add",
-          path: path.join(
-            basePath,
-            "components",
-            `${sanitizedName}-list-toolbar`,
-            "index.ts",
-          ),
-          templateFile: path.join(
-            __dirname,
-            "templates/components/module-list-toolbar/index.hbs",
-          ),
-        },
-        {
-          type: "add",
-          path: path.join(
-            basePath,
-            "components",
-            `${sanitizedName}-list-row-actions`,
-            `${sanitizedName}-list-row-actions.tsx`,
-          ),
-          templateFile: path.join(
-            __dirname,
-            "templates/components/module-list-row-actions/component.hbs",
-          ),
-        },
-        {
-          type: "add",
-          path: path.join(
-            basePath,
-            "components",
-            `${sanitizedName}-list-row-actions`,
-            "index.ts",
-          ),
-          templateFile: path.join(
-            __dirname,
-            "templates/components/module-list-row-actions/index.hbs",
-          ),
-        },
+        { filename: `${sanitizedName}.queries.ts`, template: "module.queries" },
       ];
 
-      const constants = [
-        {
+      constantsFiles.forEach(({ filename, template }) => {
+        actions.push({
           type: "add",
-          path: path.join(
-            basePath,
-            "constants",
-            `${sanitizedName}-list.columns.tsx`,
-          ),
+          path: path.join(basePath, "constants", filename),
           templateFile: path.join(
             __dirname,
-            "templates/constants/module-list.columns.hbs",
+            `templates/constants/${template}.hbs`,
           ),
-        },
-        {
-          type: "add",
-          path: path.join(basePath, "constants", `${sanitizedName}.paths.ts`),
-          templateFile: path.join(
-            __dirname,
-            "templates/constants/module.paths.hbs",
-          ),
-        },
-        {
-          type: "add",
-          path: path.join(
-            basePath,
-            "constants",
-            `${sanitizedName}.permissions.ts`,
-          ),
-          templateFile: path.join(
-            __dirname,
-            "templates/constants/module.permissions.hbs",
-          ),
-        },
-        {
-          type: "add",
-          path: path.join(basePath, "constants", `${sanitizedName}.queries.ts`),
-          templateFile: path.join(
-            __dirname,
-            "templates/constants/module.queries.hbs",
-          ),
-        },
-      ];
+        });
+      });
 
-      const pages = [
+      // Pages
+      actions.push(
         {
           type: "add",
           path: path.join(basePath, "pages", `${sanitizedName}-list.page.tsx`),
@@ -190,10 +126,10 @@ module.exports = function (plop) {
           path: path.join(basePath, "pages", "index.ts"),
           templateFile: path.join(__dirname, "templates/pages/index.hbs"),
         },
-      ];
+      );
 
       if (data.withDetailsPage) {
-        pages.push({
+        actions.push({
           type: "add",
           path: path.join(
             basePath,
@@ -207,7 +143,15 @@ module.exports = function (plop) {
         });
       }
 
-      return [...components, ...constants, ...pages];
+      // Add barrel export file for the module
+      actions.push({
+        type: "add",
+        path: path.join(basePath, "index.ts"),
+        templateFile: path.join(__dirname, "templates/module-index.hbs"),
+        data: { sanitizedName },
+      });
+
+      return actions;
     },
   });
 };
