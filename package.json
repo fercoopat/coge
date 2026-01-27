@@ -1,0 +1,16 @@
+{
+  "name": "@fercoopat/coge",
+  "version": "0.1.0",
+  "description": "Code generator for personal React projects",
+  "bin": {
+    "gen": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "plopfile.js",
+    "generators/"
+  ],
+  "dependencies": {
+    "plop": "4.0.4"
+  }
+}
