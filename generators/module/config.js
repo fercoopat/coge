@@ -10,13 +10,17 @@ module.exports = function (plop) {
         type: "input",
         name: "name",
         message: "Module name (ex: users, orders):",
+
         validate: (value) => {
           if (!value) return "Module name is required";
+
           if (!/^[a-zA-Z][a-zA-Z0-9\s-]*$/.test(value)) {
             return "Module name must start with a letter and contain only letters, numbers, spaces, and hyphens";
           }
+
           return true;
         },
+
         filter: (value) => value.trim(),
       },
       {
