@@ -1,27 +1,23 @@
 #!/usr/bin/env node
 
-const path = require("path");
-const { NodePlopAPI } = require("plop");
+import minimist from "minimist";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { Plop, run } from "plop";
 
-async function main() {
-  try {
-    // Carpeta del generador (donde están los templates y plopfile)
-    const generatorRoot = __dirname;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-    // Plopfile del generador
-    const plopfilePath = path.join(generatorRoot, "plopfile.js");
+const args = process.argv.slice(2);
+const argv = minimist(args);
 
-    // Crear instancia de Plop
-    const plop = new NodePlopAPI(plopfilePath);
+const plopfilePath = path.join(__dirname, "plopfile.js");
 
-    // Ejecutar CLI interactivo
-    await plop.run({
-      destBasePath: process.cwd(), // <-- Aquí se asegura que los archivos se generen en el proyecto consumidor
-    });
-  } catch (err) {
-    console.error("Error ejecutando el generador:", err);
-    process.exit(1);
-  }
-}
-
-main();
+// Preparar Plop con el proyecto consumidor como destino
+Plop.prepare(
+  {
+    cwd: __dirname, // carpeta del generador
+    configPath: plopfilePath, // tu plopfile.js
+    destBasePath: process.cwd(), // carpeta del proyecto que ejecuta pnpm gen
+  },
+  (env) => Plop.execute(env, run),
+);
