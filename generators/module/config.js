@@ -1,4 +1,3 @@
-// generators/module/config.js
 const path = require("path");
 const fs = require("fs");
 
@@ -10,7 +9,6 @@ module.exports = function (plop) {
         type: "input",
         name: "name",
         message: "Module name (ex: users, orders):",
-
         validate: (value) => {
           if (!value) return "Module name is required";
 
@@ -20,7 +18,6 @@ module.exports = function (plop) {
 
           return true;
         },
-
         filter: (value) => value.trim(),
       },
       {
@@ -32,15 +29,17 @@ module.exports = function (plop) {
     ],
 
     actions: (data) => {
+      // Sanitize module name
       const sanitizedName = data.name
+        .trim()
         .replace(/\s+/g, "-")
         .replace(/[^a-zA-Z0-9-]/g, "")
         .toLowerCase();
 
-      // CRITICAL FIX: Use process.cwd() to target the consumer project
+      // Use process.cwd() to ensure we write to the project root
       const basePath = path.join(process.cwd(), "src/modules", sanitizedName);
 
-      // Verify we're not writing to node_modules
+      // Security check
       if (basePath.includes("node_modules")) {
         throw new Error(
           "Security check failed: Cannot write to node_modules directory",
@@ -48,18 +47,20 @@ module.exports = function (plop) {
       }
 
       // Ensure the base directory exists
-      if (!fs.existsSync(basePath)) {
-        fs.mkdirSync(basePath, { recursive: true });
-      }
+      fs.mkdirSync(basePath, { recursive: true });
 
       const actions = [];
 
-      // Helper function to add component actions
+      // Helper to add component actions
       const addComponent = (componentName, templateName) => {
         const componentDir = path.join(
           "components",
           `${sanitizedName}-${componentName}`,
         );
+
+        // Ensure component directory exists
+        fs.mkdirSync(path.join(basePath, componentDir), { recursive: true });
+
         actions.push(
           {
             type: "add",
@@ -105,9 +106,12 @@ module.exports = function (plop) {
       ];
 
       constantsFiles.forEach(({ filename, template }) => {
+        const constantsDir = path.join(basePath, "constants");
+        fs.mkdirSync(constantsDir, { recursive: true });
+
         actions.push({
           type: "add",
-          path: path.join(basePath, "constants", filename),
+          path: path.join(constantsDir, filename),
           templateFile: path.join(
             __dirname,
             `templates/constants/${template}.hbs`,
@@ -116,10 +120,13 @@ module.exports = function (plop) {
       });
 
       // Pages
+      const pagesDir = path.join(basePath, "pages");
+      fs.mkdirSync(pagesDir, { recursive: true });
+
       actions.push(
         {
           type: "add",
-          path: path.join(basePath, "pages", `${sanitizedName}-list.page.tsx`),
+          path: path.join(pagesDir, `${sanitizedName}-list.page.tsx`),
           templateFile: path.join(
             __dirname,
             "templates/pages/module-list.page.hbs",
@@ -127,7 +134,7 @@ module.exports = function (plop) {
         },
         {
           type: "add",
-          path: path.join(basePath, "pages", "index.ts"),
+          path: path.join(pagesDir, "index.ts"),
           templateFile: path.join(__dirname, "templates/pages/index.hbs"),
         },
       );
@@ -135,11 +142,7 @@ module.exports = function (plop) {
       if (data.withDetailsPage) {
         actions.push({
           type: "add",
-          path: path.join(
-            basePath,
-            "pages",
-            `${sanitizedName}-details.page.tsx`,
-          ),
+          path: path.join(pagesDir, `${sanitizedName}-details.page.tsx`),
           templateFile: path.join(
             __dirname,
             "templates/pages/module-details.page.hbs",
@@ -147,7 +150,7 @@ module.exports = function (plop) {
         });
       }
 
-      // Add barrel export file for the module
+      // Module barrel export
       actions.push({
         type: "add",
         path: path.join(basePath, "index.ts"),
