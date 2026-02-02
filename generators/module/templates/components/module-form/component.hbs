@@ -11,7 +11,7 @@ import { FieldGroup } from "@/components/ui/field";
 type Props = {
   isLoading: boolean;
 };
-const {{pascalCase name}}Form = ({ isLoading }: Props) => {
+const {{singularCase (pascalCase name)}}Form = ({ isLoading }: Props) => {
   const { t } = useTranslation();
 
   return (
@@ -21,16 +21,16 @@ const {{pascalCase name}}Form = ({ isLoading }: Props) => {
         required
         disabled={isLoading}
         name="name"
-        label={t("{{camelCase name}}:fields.name")}
+        label={t("{{singularCase (camelCase name)}}:fields.name")}
       />
 
       <FormTextareaField
         disabled={isLoading}
         name="description"
-        label={t("{{camelCase name}}:fields.description")}
+        label={t("{{singularCase (camelCase name)}}:fields.description")}
         rows={5}
       />
     </FieldGroup>
   );
 };
-export default memo({{pascalCase name}}Form);
+export default memo({{singularCase (pascalCase name)}}Form);

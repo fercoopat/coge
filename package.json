@@ -12,5 +12,13 @@
   ],
   "dependencies": {
     "plop": "4.0.4"
+  },
+  "devDependencies": {
+    "standard": "17.1.2"
+  },
+  "eslintConfig": {
+    "extends": [
+      "./node_modules/standard/eslintrc.json"
+    ]
   }
 }
